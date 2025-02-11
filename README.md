@@ -5,4 +5,4 @@ A **CMS (Content Management System)** is a platform that allows users to create,
 ## 🚀 Objective  
 Create a fully production-ready **blog web application** with essential blog functionalities and content management through an admin dashboard.  
 
-## ✨ waiting for updates 
+## ✨ follow for updates 
