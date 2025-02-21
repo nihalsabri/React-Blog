@@ -21,7 +21,6 @@ const Navbar = () => {
 
         {user ? (
           <>
-            <li><Link to="/">post</Link></li>
             <li>Welcome, {user.username}</li>
             <li>
               <button onClick={handleLogout}>Log Out</button>

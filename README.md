@@ -1,8 +1,8 @@
-# Blog with User Interface and Management Dashboard  
+# React + Vite
 
-A **CMS (Content Management System)** is a platform that allows users to create, manage, and modify digital content without needing extensive technical knowledge.  
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## 🚀 Objective  
-Create a fully production-ready **blog web application** with essential blog functionalities and content management through an admin dashboard.  
+Currently, two official plugins are available:
 
-## ✨ follow for updates 
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh

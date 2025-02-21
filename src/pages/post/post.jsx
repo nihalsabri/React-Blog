@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../context/authContext";
 
 import { useParams } from "react-router-dom";
-const [loading, setLoading] = useState(true);
+
+const Post = () => {
+  const [loading, setLoading] = useState(true);
 const [post, setPost] = useState([]);
 
 const BASE_URL = "http://ec2-3-76-10-130.eu-central-1.compute.amazonaws.com:4004/api/v1";
-const Post = () => {
   const { id } = useParams();
   if (!id) {
     console.error("Post ID is missing!");

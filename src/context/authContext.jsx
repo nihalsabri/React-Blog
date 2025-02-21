@@ -1,64 +1,117 @@
+
 import { createContext, useContext, useState, useEffect } from "react";
+import axios from "axios";
 
 const AuthContext = createContext();
+
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-   
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
-  }, []);
+  const BASE_URL = "http://ec2-3-76-10-130.eu-central-1.compute.amazonaws.com:4004/api/v1";
 
+  useEffect(() => {
+    try {
+      const storedUser = localStorage.getItem("user");
+  
+      if (storedUser && storedUser !== "undefined") {
+        const parsedUser = JSON.parse(storedUser);
+        
+        if (!user || user.id !== parsedUser.id) {  
+          setUser(parsedUser);
+        }
+      } else {
+        localStorage.removeItem("user");
+      }
+    } catch (error) {
+      console.error(" Error parsing user data from localStorage:", error);
+      localStorage.removeItem("user");
+    }
+  }, []); 
+  
   useEffect(() => {
     if (user) {
       localStorage.setItem("user", JSON.stringify(user));
     } else {
       localStorage.removeItem("user");
+      localStorage.removeItem("token");
     }
   }, [user]);
 
-  const BASE_URL = "http://ec2-3-76-10-130.eu-central-1.compute.amazonaws.com:4004/api/v1";
-
-const login = async (username, password) => {
-  try {
-    const res = await fetch(`${BASE_URL}/auth/signing`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-    });
-
-    if (!res.ok) {
-      const errorData = await res.json();
-      throw new Error(errorData.message || "Invalid credentials");
+  const signup = async (username, email, password) => {
+    try {
+      const { data } = await axios.post(`${BASE_URL}/auth/signup`, { username, email, password });
+      console.log("Signup success:", data);
+      return data; 
+    } catch (error) {
+      console.error("Signup failed:", error.response?.data?.message || error.message);
+      throw new Error(error.response?.data?.message || "Signup failed");
     }
+  };
 
-    const data = await res.json();
-    console.log("Login success:", data);
-    return data;
-  } catch (error) {
-    console.error("Login failed:", error);
-    throw error;
-  }
-};
-
+  // const login = async (username, password) => {
+ 
+  //   try {
+  //     const { data } = await axios.post(`${BASE_URL}/auth/signing`, { username, password });
+  
+  //     setUser(data.user); 
+      
+  //     localStorage.setItem("user", JSON.stringify(data.user));
+  //     localStorage.setItem("token", data.token);
+  
+  //     return data;
+  //   } catch (error) {
+  //     console.error("Login failed:", error.response?.data?.message || error.message);
+  //     throw new Error(error.response?.data?.message || "Invalid credentials");
+  //   }
+  // };
+  const parseJwt = (token) => {
+    try {
+      return JSON.parse(atob(token.split('.')[1])); 
+    } catch (error) {
+      console.error("Failed to parse JWT:", error);
+      return null;
+    }
+  };
+  
+  const login = async (username, password) => {
+    try {
+      const { data } = await axios.post(`${BASE_URL}/auth/signing`, { username, password });
+  
+      console.log("🔹 API Response:", data);
+  
+      if (data?.data) {
+        const decodedToken = parseJwt(data.data); 
+  
+        if (decodedToken?.userId) {
+          const user = { id: decodedToken.userId, username };
+          setUser(user);
+          localStorage.setItem("user", JSON.stringify(user));
+          localStorage.setItem("token", data.data);
+          console.log(" User stored:", user);
+        } else {
+          throw new Error("Invalid user data in token.");
+        }
+      } else {
+        throw new Error("Invalid user data received.");
+      }
+    } catch (error) {
+      console.error("Login failed:", error.message);
+      throw new Error("Invalid credentials");
+    }
+  };
+  
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("user"); 
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
   };
-
-  const checkAuth = () => {
-    return !!user || !!localStorage.getItem("user");
-  };
+  const checkAuth = () => !!user || !!localStorage.getItem("user");
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, checkAuth, loading }}>
+    <AuthContext.Provider value={{ user, signup, login, logout, checkAuth, loading }}>
       {children}
     </AuthContext.Provider>
   );
