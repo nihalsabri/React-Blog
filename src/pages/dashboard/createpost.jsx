@@ -1,39 +1,65 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Checkbox,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Paper,
+  Alert,
+} from "@mui/material";
 
 const BASE_URL = "http://ec2-3-76-10-130.eu-central-1.compute.amazonaws.com:4004/api/v1";
 
 const CreatePost = () => {
   const navigate = useNavigate();
-
+  const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
     content: "",
-    cover: null, 
-    published: true, 
-    categories: [], 
-    tags: "", 
+    cover: null,
+    published: true,
+    categories: [],
+    tags: "",
   });
   const [error, setError] = useState(null);
 
-  
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/categories`);
+      setCategories(response.data.data);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      setError("Failed to load categories.");
+    }
+  };
+
   const uploadImage = async (file) => {
-    const token = localStorage.getItem("token"); 
-    const url = `${BASE_URL}/uploads/posts`; 
+    const token = localStorage.getItem("token");
+    const url = `${BASE_URL}/uploads/posts`;
 
     const formData = new FormData();
-    formData.append("cover", file); 
+    formData.append("cover", file);
     try {
       const response = await axios.post(url, formData, {
         headers: {
-          Authorization: `Bearer ${token}`, 
-          "Content-Type": "multipart/form-data", 
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
         },
       });
 
-      console.log("Image uploaded successfully:", response.data);
-      return response.data.filename; 
+      return response.data.filename;
     } catch (error) {
       console.error("Error uploading image:", error.response?.data || error);
       throw error;
@@ -41,17 +67,16 @@ const CreatePost = () => {
   };
 
   const createPost = async (postData) => {
-    const token = localStorage.getItem("token"); 
-    const url = `${BASE_URL}/posts`; 
+    const token = localStorage.getItem("token");
+    const url = `${BASE_URL}/posts`;
     try {
       const response = await axios.post(url, postData, {
         headers: {
-          Authorization: `Bearer ${token}`, 
+          Authorization: `Bearer ${token}`,
         },
       });
 
-      console.log("Post created successfully:", response.data);
-      return response.data; 
+      return response.data;
     } catch (error) {
       console.error("Error creating post:", error.response?.data || error);
       throw error;
@@ -64,7 +89,7 @@ const CreatePost = () => {
   };
 
   const handleFileChange = (e) => {
-    setFormData({ ...formData, cover: e.target.files[0] }); 
+    setFormData({ ...formData, cover: e.target.files[0] });
   };
 
   const handleCategoryChange = (e) => {
@@ -79,22 +104,19 @@ const CreatePost = () => {
     e.preventDefault();
 
     try {
-     
-      const coverFilename = await uploadImage(formData.cover);
+      const coverName = await uploadImage(formData.cover);
 
       const postData = {
         title: formData.title,
         content: formData.content,
-        cover: coverFilename, 
+        cover: coverName,
         published: formData.published,
-        categories: formData.categories, 
-        tags: formData.tags.split(",").map((tag) => tag.trim()), 
+        categories: formData.categories,
+        tags: formData.tags.split(",").map((tag) => tag.trim()),
       };
 
       await createPost(postData);
-
-      console.log("Post created successfully!");
-      navigate("/dashboard/posts"); 
+      navigate("/dashboard/posts");
     } catch (error) {
       console.error("Error creating post:", error.response?.data || error);
       setError("Failed to create post. Please check the input fields.");
@@ -102,77 +124,104 @@ const CreatePost = () => {
   };
 
   return (
-    <div>
-      <h2>Create New Post</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Title:</label>
-          <input
-            type="text"
+    <Box sx={{ p: 3 }}>
+      <Typography variant="h4" gutterBottom>
+        Create New Post
+      </Typography>
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {error}
+        </Alert>
+      )}
+      <Paper sx={{ p: 3 }}>
+        <form onSubmit={handleSubmit}>
+          <TextField
+            fullWidth
+            label="Title"
             name="title"
             value={formData.title}
             onChange={handleInputChange}
             required
+            sx={{ mb: 2 }}
           />
-        </div>
-        <div>
-          <label>Content:</label>
-          <textarea
+          <TextField
+            fullWidth
+            label="Content"
             name="content"
             value={formData.content}
             onChange={handleInputChange}
+            multiline
+            rows={4}
             required
+            sx={{ mb: 2 }}
           />
-        </div>
-        <div>
-          <label>Cover Image:</label>
-          <input
-            type="file"
-            name="cover"
-            onChange={handleFileChange}
-            accept="image/*" 
-            required
-          />
-        </div>
-        <div>
-          <label>Published:</label>
-          <input
-            type="checkbox"
-            name="published"
-            checked={formData.published}
-            onChange={(e) =>
-              setFormData({ ...formData, published: e.target.checked })
-            }
-          />
-        </div>
-        <div>
-          <label>Categories:</label>
-          <select
-            multiple
-            value={formData.categories}
-            onChange={handleCategoryChange}
-            required
-          >
-            <option value="1">Category 1</option>
-            <option value="2">Category 2</option>
-            <option value="3">Category 3</option>
-          </select>
-        </div>
-        <div>
-          <label>Tags:</label>
-          <input
-            type="text"
+          <Box sx={{ mb: 2 }}>
+            <input
+              type="file"
+              name="cover"
+              onChange={handleFileChange}
+              accept="image/*"
+              required
+              style={{ display: "none" }}
+              id="cover-upload"
+            />
+            <label htmlFor="cover-upload">
+              <Button variant="contained" component="span">
+                Upload Cover Image
+              </Button>
+            </label>
+            {formData.cover && (
+              <Typography variant="body2" sx={{ mt: 1 }}>
+                Selected file: {formData.cover.name}
+              </Typography>
+            )}
+          </Box>
+          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+            <Checkbox
+              name="published"
+              checked={formData.published}
+              onChange={(e) =>
+                setFormData({ ...formData, published: e.target.checked })
+              }
+            />
+            <Typography>Published</Typography>
+          </Box>
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Categories</InputLabel>
+            <Select
+              multiple
+              value={formData.categories}
+              onChange={handleCategoryChange}
+              required
+              label="Categories"
+            >
+              {categories.length > 0 ? (
+                categories.map((category) => (
+                  <MenuItem key={category.id} value={category.id}>
+                    {category.name}
+                  </MenuItem>
+                ))
+              ) : (
+                <MenuItem disabled>No categories available</MenuItem>
+              )}
+            </Select>
+          </FormControl>
+          <TextField
+            fullWidth
+            label="Tags"
             name="tags"
             value={formData.tags}
             onChange={handleInputChange}
-            placeholder="tag1, tag2, tag3"
+            placeholder="tag1, tag2"
             required
+            sx={{ mb: 2 }}
           />
-        </div>
-        <button type="submit">Create Post</button>
-      </form>
-    </div>
+          <Button type="submit" variant="contained" color="primary">
+            Create Post
+          </Button>
+        </form>
+      </Paper>
+    </Box>
   );
 };
 

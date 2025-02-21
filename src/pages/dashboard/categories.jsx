@@ -1,8 +1,24 @@
 
+
+
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Modal from "react-modal";
-import Button from '@mui/material/Button';
+import {
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  TextField,
+  Typography,
+  Box,
+  Alert,
+} from "@mui/material";
+import Sidebar from "../../component/sidebar/sidebar";
 
 const BASE_URL = "http://ec2-3-76-10-130.eu-central-1.compute.amazonaws.com:4004/api/v1";
 
@@ -17,7 +33,6 @@ const Categories = () => {
   const [formData, setFormData] = useState({ name: "", slug: "" });
   const [error, setError] = useState(null);
 
-  
   useEffect(() => {
     fetchCategories();
   }, []);
@@ -32,12 +47,10 @@ const Categories = () => {
     }
   };
 
-  
   const openAddModal = () => {
     setFormData({ name: "", slug: "" });
     setIsAddModalOpen(true);
   };
-
 
   const openEditModal = (category) => {
     setSelectedCategory(category);
@@ -50,7 +63,6 @@ const Categories = () => {
     setIsDeleteModalOpen(true);
   };
 
-  
   const closeModal = () => {
     setIsAddModalOpen(false);
     setIsEditModalOpen(false);
@@ -58,49 +70,43 @@ const Categories = () => {
     setSelectedCategory(null);
   };
 
- 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const token = localStorage.getItem("token"); 
+    const token = localStorage.getItem("token");
     const url = selectedCategory
-      ? `${BASE_URL}/categories/${selectedCategory.id}` 
-      : `${BASE_URL}/categories`; 
-    const method = selectedCategory ? "patch" : "post"; 
+      ? `${BASE_URL}/categories/${selectedCategory.id}`
+      : `${BASE_URL}/categories`;
+    const method = selectedCategory ? "patch" : "post";
 
     try {
       const response = await axios[method](url, formData, {
         headers: {
-          Authorization: `Bearer ${token}`, 
+          Authorization: `Bearer ${token}`,
         },
       });
 
       if (selectedCategory) {
-        
         setCategories(
           categories.map((cat) =>
             cat.id === selectedCategory.id ? response.data.data : cat
           )
         );
       } else {
-      
         setCategories([...categories, response.data.data]);
       }
 
-      closeModal(); 
+      closeModal();
     } catch (error) {
       console.error("Error saving category:", error.response || error);
-      
     }
   };
 
-  // Handle category deletion
   const handleDelete = async () => {
     try {
       await axios.delete(`${BASE_URL}/categories/${selectedCategory.id}`, {
@@ -117,118 +123,172 @@ const Categories = () => {
   };
 
   return (
-    <div>
-      <h2>Manage Categories</h2>
-      {error && <div className="error-message">{error}</div>}
-      <button onClick={openAddModal}>+ Add New Category</button>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Slug</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {categories.map((category) => (
-            <tr key={category.id}>
-              <td>{category.id}</td>
-              <td>{category.name}</td>
-              <td>{category.slug}</td>
-              <td>
-              <Button variant="contained" onClick={() => openEditModal(category)}>Edit</Button>
-              <Button variant="contained" onClick={() => openDeleteModal(category)}>Delete</Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <Box sx={{ display: "flex" }}>
+      <Sidebar />
+      <Box sx={{ flexGrow: 1, p: 3 }}>
+        <Typography variant="h4" gutterBottom>
+          Manage Categories
+        </Typography>
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        )}
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={openAddModal}
+          sx={{ mb: 3 }}
+        >
+          + Add New Category
+        </Button>
 
-      {/* Add Category Modal */}
-      <Modal
-        isOpen={isAddModalOpen}
-        onRequestClose={closeModal}
-        contentLabel="Add Category Modal"
-      >
-        <h2>Add New Category</h2>
-        <form onSubmit={handleSubmit}>
-          <div>
-            <label>Name:</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Slug:</label>
-            <input
-              type="text"
-              name="slug"
-              value={formData.slug}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-          <button type="submit">Save</button>
-          <button type="button" onClick={closeModal}>
-            Cancel
-          </button>
-        </form>
-      </Modal>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>ID</TableCell>
+                <TableCell>Name</TableCell>
+                <TableCell>Slug</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {categories.map((category) => (
+                <TableRow key={category.id}>
+                  <TableCell>{category.id}</TableCell>
+                  <TableCell>{category.name}</TableCell>
+                  <TableCell>{category.slug}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      onClick={() => openEditModal(category)}
+                      sx={{ mr: 1 }}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="secondary"
+                      onClick={() => openDeleteModal(category)}
+                    >
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
-      {/* Edit Category Modal */}
-      <Modal
-        isOpen={isEditModalOpen}
-        onRequestClose={closeModal}
-        contentLabel="Edit Category Modal"
-      >
-        <h2>Edit Category</h2>
-        <form onSubmit={handleSubmit}>
-          <div>
-            <label>Name:</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Slug:</label>
-            <input
-              type="text"
-              name="slug"
-              value={formData.slug}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-          <button type="submit">Update</button>
-          <button type="button" onClick={closeModal}>
-            Cancel
-          </button>
-        </form>
-      </Modal>
+        {/* Add Category Modal */}
+        <Modal
+          isOpen={isAddModalOpen}
+          onRequestClose={closeModal}
+          contentLabel="Add Category Modal"
+        >
+          <Box sx={{ p: 3, bgcolor: "background.paper", borderRadius: 2 }}>
+            <Typography variant="h5" gutterBottom>
+              Add New Category
+            </Typography>
+            <form onSubmit={handleSubmit}>
+              <TextField
+                fullWidth
+                label="Name"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                required
+                sx={{ mb: 2 }}
+              />
+              <TextField
+                fullWidth
+                label="Slug"
+                name="slug"
+                value={formData.slug}
+                onChange={handleInputChange}
+                required
+                sx={{ mb: 2 }}
+              />
+              <Button type="submit" variant="contained" color="primary" sx={{ mr: 2 }}>
+                Save
+              </Button>
+              <Button type="button" onClick={closeModal} variant="outlined">
+                Cancel
+              </Button>
+            </form>
+          </Box>
+        </Modal>
 
-      {/* Delete Confirmation Modal */}
-      <Modal
-        isOpen={isDeleteModalOpen}
-        onRequestClose={closeModal}
-        contentLabel="Delete Category Modal"
-      >
-        <h2>Are you sure you want to delete this category?</h2>
-        <p>
-          Deleting <strong>{selectedCategory?.name}</strong> will remove it permanently.
-        </p>
-        <button onClick={handleDelete}>Yes, Delete</button>
-        <button onClick={closeModal}>Cancel</button>
-      </Modal>
-    </div>
+        {/* Edit Category Modal */}
+        <Modal
+          isOpen={isEditModalOpen}
+          onRequestClose={closeModal}
+          contentLabel="Edit Category Modal"
+        >
+          <Box sx={{ p: 3, bgcolor: "background.paper", borderRadius: 2 }}>
+            <Typography variant="h5" gutterBottom>
+              Edit Category
+            </Typography>
+            <form onSubmit={handleSubmit}>
+              <TextField
+                fullWidth
+                label="Name"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                required
+                sx={{ mb: 2 }}
+              />
+              <TextField
+                fullWidth
+                label="Slug"
+                name="slug"
+                value={formData.slug}
+                onChange={handleInputChange}
+                required
+                sx={{ mb: 2 }}
+              />
+              <Button type="submit" variant="contained" color="primary" sx={{ mr: 2 }}>
+                Update
+              </Button>
+              <Button type="button" onClick={closeModal} variant="outlined">
+                Cancel
+              </Button>
+            </form>
+          </Box>
+        </Modal>
+
+        {/* Delete Confirmation Modal */}
+        <Modal
+          isOpen={isDeleteModalOpen}
+          onRequestClose={closeModal}
+          contentLabel="Delete Category Modal"
+        >
+          <Box sx={{ p: 3, bgcolor: "background.paper", borderRadius: 2 }}>
+            <Typography variant="h5" gutterBottom>
+              Delete Category
+            </Typography>
+            <Typography sx={{ mb: 2 }}>
+              Are you sure you want to delete <strong>{selectedCategory?.name}</strong>? This action
+              cannot be undone.
+            </Typography>
+            <Button
+              onClick={handleDelete}
+              variant="contained"
+              color="secondary"
+              sx={{ mr: 2 }}
+            >
+              Yes, Delete
+            </Button>
+            <Button onClick={closeModal} variant="outlined">
+              Cancel
+            </Button>
+          </Box>
+        </Modal>
+      </Box>
+    </Box>
   );
 };
 

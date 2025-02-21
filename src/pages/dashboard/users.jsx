@@ -1,9 +1,26 @@
+
+
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Sidebar from "../../component/sidebar/sidebar";
 import { useNavigate } from "react-router-dom";
+import {
+  Box,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Button,
+  Select,
+  MenuItem,
+  CircularProgress,
+} from "@mui/material";
 
 const BASE_URL = "http://ec2-3-76-10-130.eu-central-1.compute.amazonaws.com:4004/api/v1";
 
@@ -13,7 +30,6 @@ const Users = () => {
   const [newRole, setNewRole] = useState("");
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -53,7 +69,6 @@ const Users = () => {
       .finally(() => setLoading(false));
   }, [navigate]);
 
- 
   const handleRoleUpdate = async () => {
     if (selectedUser) {
       const token = localStorage.getItem("token");
@@ -85,54 +100,79 @@ const Users = () => {
   };
 
   return (
-    <div>
-     <Sidebar />
-      <h2>Manage Users</h2>
+    <Box sx={{ display: "flex" }}>
+      <Sidebar />
+      <Box sx={{ flexGrow: 1, p: 3 }}>
+        <Typography variant="h4" gutterBottom>
+          Manage Users
+        </Typography>
 
-      {loading ? (
-        <p>Loading users...</p>
-      ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Username</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td>{user.id}</td>
-                <td>{user.username}</td>
-                <td>{user.email}</td>
-                <td>{user.role}</td>
-                <td>
-                  <button onClick={() => setSelectedUser(user)}>Update Role</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+        {loading ? (
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>ID</TableCell>
+                  <TableCell>Username</TableCell>
+                  <TableCell>Email</TableCell>
+                  <TableCell>Role</TableCell>
+                  <TableCell>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {users.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell>{user.id}</TableCell>
+                    <TableCell>{user.username}</TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>{user.role}</TableCell>
+                    <TableCell>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => setSelectedUser(user)}
+                      >
+                        Update Role
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
 
-      {selectedUser && (
-        <div>
-          <h3>Update Role for {selectedUser.username}</h3>
-          <select value={newRole} onChange={(e) => setNewRole(e.target.value)}>
-  <option value="ADMIN">Admin</option>
-  <option value="MANAGE_POSTS">Manage Posts</option>
-  <option value="MANAGE_COMMENTS">Manage Comments</option>
-  <option value="USER">User</option>
-</select>
-          <button onClick={handleRoleUpdate}>Save Role</button>
-        </div>
-      )}
-    </div>
+        {selectedUser && (
+          <Box sx={{ mt: 3, p: 3, bgcolor: "background.paper", borderRadius: 2 }}>
+            <Typography variant="h5" gutterBottom>
+              Update Role for {selectedUser.username}
+            </Typography>
+            <Select
+              value={newRole}
+              onChange={(e) => setNewRole(e.target.value)}
+              fullWidth
+              sx={{ mb: 2 }}
+            >
+              <MenuItem value="ADMIN">Admin</MenuItem>
+              <MenuItem value="MANAGE_POSTS">Manage Posts</MenuItem>
+              <MenuItem value="USER">User</MenuItem>
+            </Select>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleRoleUpdate}
+            >
+              Save Role
+            </Button>
+          </Box>
+        )}
+      </Box>
+    </Box>
   );
 };
 
 export default Users;
-
