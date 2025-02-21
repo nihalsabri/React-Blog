@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Modal from "react-modal";
 import Button from '@mui/material/Button';
-import Sidebar from "../../component/sidebar/sidebar";
+
 const BASE_URL = "http://ec2-3-76-10-130.eu-central-1.compute.amazonaws.com:4004/api/v1";
 
 Modal.setAppElement("#root");
@@ -118,7 +118,6 @@ const Categories = () => {
 
   return (
     <div>
-      <Sidebar />
       <h2>Manage Categories</h2>
       {error && <div className="error-message">{error}</div>}
       <button onClick={openAddModal}>+ Add New Category</button>

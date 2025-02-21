@@ -81,9 +81,8 @@ const Posts = () => {
     setFormData({
       title: post.title,
       content: post.content,
-      cover: post.cover ? `${BASE_URL}/uploads/posts/${post.cover}` : null,
-      coverName: post.cover
-       || "",
+      cover: post.cover,
+      coverName: post.cover || "",
       published: post.published,
       categories: post.categories.map((cat) => cat.category.id),
       tags: Array.isArray(post.tags) ? post.tags.join(", ") : "",
@@ -257,7 +256,7 @@ const Posts = () => {
     let updatedData = {
       title: formData.title.trim(),
       content: formData.content.trim(),
-      cover: formData.coverName, 
+      cover: formData.coverName, // Initial cover name (before upload)
       published: formData.published,
       categories: formData.categories,
       tags: formData.tags.split(",").map((tag) => tag.trim()),
@@ -283,8 +282,8 @@ const Posts = () => {
   
         console.log("Upload Response:", uploadResponse.data);
   
-        
-        updatedData.cover = uploadResponse.data.data; 
+        // Correctly access the file name from the response
+        updatedData.cover = uploadResponse.data.data; // Update this line
       } catch (uploadError) {
         console.error("Error uploading image:", uploadError.response?.data || uploadError);
         return;
@@ -294,7 +293,7 @@ const Posts = () => {
     console.log("Final Updated Data:", updatedData);
   
     try {
-      const response = await axios.patch(url, updatedData, {
+      const response = await axios.post(url, updatedData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -302,16 +301,6 @@ const Posts = () => {
       });
   
       console.log("Post updated successfully:", response.data);
-
-      setPosts((prevPosts) =>
-        prevPosts.map((post) =>
-          post.id === selectedPost.id ? { ...post, ...updatedData, cover: updatedData.cover ? `${BASE_URL}/uploads/posts/${updatedData.cover}` : post.cover } : post
-        )
-      );
-
-
-
-
       closeModal();
     } catch (error) {
       console.error("Error updating post:", error.response?.data || error);
@@ -345,9 +334,6 @@ const Posts = () => {
       console.error("Error deleting post:", error.response?.data || error);
     }
   };
-
-
-
 
   return (
     <div>

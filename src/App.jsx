@@ -30,16 +30,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={ <ProtectedRoute> <Dashboard /> </ProtectedRoute> } /> 
      
-        <Route path="/dashboard/categories" element={ <ProtectedRoute> <Categories/> </ProtectedRoute> } />
+         <Route path="/dashboard/categories" element={ <ProtectedRoute> <Categories/> </ProtectedRoute> } />
         <Route path="/dashboard/posts" element={  <ProtectedRoute>  <Posts/> </ProtectedRoute> } />
-
-
-
-        <Route path="/dashboard/posts/:id" element={  <ProtectedRoute>  <detailedPost/> </ProtectedRoute> } />
-        <Route path="/categories/:slug" element={   <p>helllo</p>  } />
-
-
-
         <Route path="/dashboard/users" element={ <ProtectedRoute>   <Users/> </ProtectedRoute>} />
         <Route path="/dashboard/createpost" element={<CreatePost />} />
         </Routes>
