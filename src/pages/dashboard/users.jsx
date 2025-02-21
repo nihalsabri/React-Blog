@@ -20,6 +20,7 @@ import {
   Select,
   MenuItem,
   CircularProgress,
+  Modal,
 } from "@mui/material";
 
 const BASE_URL = "http://ec2-3-76-10-130.eu-central-1.compute.amazonaws.com:4004/api/v1";
@@ -40,8 +41,7 @@ const Users = () => {
       return;
     }
 
-    axios
-      .get(`${BASE_URL}/users`, {
+    axios.get(`${BASE_URL}/users`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -146,7 +146,7 @@ const Users = () => {
           </TableContainer>
         )}
 
-        {selectedUser && (
+        {/* {selectedUser && (
           <Box sx={{ mt: 3, p: 3, bgcolor: "background.paper", borderRadius: 2 }}>
             <Typography variant="h5" gutterBottom>
               Update Role for {selectedUser.username}
@@ -169,7 +169,48 @@ const Users = () => {
               Save Role
             </Button>
           </Box>
-        )}
+        )} */}
+
+<Modal open={!!selectedUser} onClose={() => setSelectedUser(null)}>
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              bgcolor: "background.paper",
+              boxShadow: 24,
+              p: 4,
+              borderRadius: 2,
+              minWidth: 300,
+            }}
+          >
+            {selectedUser && (
+              <>
+                <Typography variant="h5" gutterBottom>
+                  Update Role for {selectedUser.username}
+                </Typography>
+                <Select
+                  value={newRole}
+                  onChange={(e) => setNewRole(e.target.value)}
+                  fullWidth
+                  sx={{ mb: 2 }}
+                >
+                 {selectedUser.role !== "ADMIN" && <MenuItem value="ADMIN">Admin</MenuItem>}
+                  {selectedUser.role !== "MANAGE_POSTS" && <MenuItem value="MANAGE_POSTS">Manage Posts</MenuItem>}
+                  {selectedUser.role !== "USER" && <MenuItem value="USER">User</MenuItem>}
+                </Select>
+                <Button variant="contained" color="primary" onClick={handleRoleUpdate}>
+                  Save Role
+                </Button>
+              </>
+            )}
+          </Box>
+        </Modal>
+
+
+
+
       </Box>
     </Box>
   );

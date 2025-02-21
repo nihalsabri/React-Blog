@@ -59,23 +59,59 @@ export const AuthProvider = ({ children }) => {
     }
   };
   
+  // const login = async (username, password) => {
+  //   try {
+  //     const { data } = await axios.post(`${BASE_URL}/auth/signing`, { username, password });
+  
+  //     console.log("API Response:", data);
+  
+  //     if (data?.data) {
+  //       const decodedToken = parseJwt(data.data); 
+  
+  //       if (decodedToken?.userId) {
+  //         const user = { id: decodedToken.userId, username };
+  //         setUser(user);
+  //         localStorage.setItem("user", JSON.stringify(user));
+  //         localStorage.setItem("token", data.data);
+  //         console.log(" User stored:", user);
+  //       } else {
+  //         throw new Error("Invalid user data in token.");
+  //       }
+  //     } else {
+  //       throw new Error("Invalid user data received.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Login failed:", error.message);
+  //     throw new Error("Invalid credentials");
+  //   }
+  // };
+
   const login = async (username, password) => {
     try {
       const { data } = await axios.post(`${BASE_URL}/auth/signing`, { username, password });
   
-      console.log("🔹 API Response:", data);
+      console.log("API Response:", data);
   
       if (data?.data) {
-        const decodedToken = parseJwt(data.data); 
+        const token = data.data;
+        localStorage.setItem("token", token);
   
-        if (decodedToken?.userId) {
-          const user = { id: decodedToken.userId, username };
+        const userResponse = await axios.get(`${BASE_URL}/users/@me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+  
+        if (userResponse?.data?.data) {
+          const { id, role, username } = userResponse.data.data; 
+  
+          const user = { id, username, role };
+  
+     
           setUser(user);
           localStorage.setItem("user", JSON.stringify(user));
-          localStorage.setItem("token", data.data);
-          console.log(" User stored:", user);
+  
+          console.log("User stored with role:", user);
         } else {
-          throw new Error("Invalid user data in token.");
+          throw new Error("Failed to fetch user data.");
         }
       } else {
         throw new Error("Invalid user data received.");
@@ -86,6 +122,8 @@ export const AuthProvider = ({ children }) => {
     }
   };
   
+  
+
 
   const logout = () => {
     setUser(null);

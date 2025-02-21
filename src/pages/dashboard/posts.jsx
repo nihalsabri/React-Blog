@@ -83,12 +83,16 @@ const Posts = () => {
     setFormData({ ...formData, coverName: e.target.value });
   };
 
+  // const handleCategoryChange = (e) => {
+  //   const selectedCategories = Array.from(e.target.selectedOptions, (option) =>
+  //     Number(option.value)
+  //   );
+  //   setFormData({ ...formData, categories: selectedCategories });
+  // };
   const handleCategoryChange = (e) => {
-    const selectedCategories = Array.from(e.target.selectedOptions, (option) =>
-      Number(option.value)
-    );
-    setFormData({ ...formData, categories: selectedCategories });
+    setFormData({ ...formData, categories: e.target.value });
   };
+  
 
   const renameFile = (file, newName) => {
     return new File([file], newName, { type: file.type });
@@ -119,13 +123,201 @@ const Posts = () => {
     setSelectedPost(null);
   };
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+   
+  //   if (!selectedPost) {
+  //           console.error("No post selected for update.");
+  //           return;
+  //         }
+        
+  //         const token = localStorage.getItem("token");
+  //         const url = `${BASE_URL}/posts/${selectedPost.id}`;
+        
+  //         if (!formData.title.trim() || !formData.content.trim()) {
+  //           console.error("Title and Content cannot be empty.");
+  //           return;
+  //         }
+        
+  //         let updatedData = {
+  //           title: formData.title.trim(),
+  //           content: formData.content.trim(),
+  //           cover: formData.coverName, 
+  //           published: formData.published,
+  //           categories: formData.categories,
+  //           tags: formData.tags.split(",").map((tag) => tag.trim()),
+  //         };
+        
+  //         console.log("Updated Data Before File Upload:", updatedData);
+        
+  //         if (formData.cover instanceof File) {
+  //           const renamedFile = renameFile(formData.cover, formData.coverName);
+  //           const imageFormData = new FormData();
+  //           imageFormData.append("cover", renamedFile);
+  //           try {
+  //             const uploadResponse = await axios.post(
+  //               `${BASE_URL}/uploads/posts`,
+  //               imageFormData,
+  //               {
+  //                 headers: {
+  //                   Authorization: `Bearer ${token}`,
+  //                   "Content-Type": "multipart/form-data",
+  //                 },
+  //               }
+  //             );
+        
+  //             console.log("Upload Response:", uploadResponse.data);
+        
+              
+  //             updatedData.cover = uploadResponse.data.data; 
+  //           } catch (uploadError) {
+  //             console.error("Error uploading image:", uploadError.response?.data || uploadError);
+  //             return;
+  //           }
+  //         }
+        
+  //         console.log("Final Updated Data:", updatedData);
+        
+  //         try {
+  //           const response = await axios.patch(url, updatedData, {
+  //             headers: {
+  //               Authorization: `Bearer ${token}`,
+  //               "Content-Type": "application/json",
+  //             },
+  //           });
+        
+  //           console.log("Post updated successfully:", response.data);
+      
+  //           setPosts((prevPosts) =>
+  //             prevPosts.map((post) =>
+  //               post.id === selectedPost.id ? { ...post, ...updatedData, cover: updatedData.cover ? `${BASE_URL}/uploads/posts/${updatedData.cover}` : post.cover } : post
+  //             )
+  //           );
+      
+      
+      
+  //           closeModal();
+  //         } catch (error) {
+  //           console.error("Error updating post:", error.response?.data || error);
+  //           if (error.response) {
+  //             console.error("Server response data:", error.response.data);
+  //             console.error("Server response status:", error.response.status);
+  //             console.error("Server response headers:", error.response.headers);
+  //           }
+  //         }
+  //       };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Logic for handling form submission
-  };
+  
+    if (!selectedPost) {
+      console.error("No post selected for update.");
+      return;
+    }
+  
+    const token = localStorage.getItem("token");
+    const url = `${BASE_URL}/posts/${selectedPost.id}`;
+  
+    if (!formData.title.trim() || !formData.content.trim()) {
+      console.error("Title and Content cannot be empty.");
+      return;
+    }
+  
+    let updatedData = {
+      title: formData.title.trim(),
+      content: formData.content.trim(),
+      cover: formData.coverName, 
+      published: formData.published,
+      categories: formData.categories,
+      tags: formData.tags.split(",").map((tag) => tag.trim()),
+    };
+  
+    console.log("Updated Data Before File Upload:", updatedData);
+  
+    if (formData.cover instanceof File) {
+      const renamedFile = renameFile(formData.cover, formData.coverName);
+      const imageFormData = new FormData();
+      imageFormData.append("cover", renamedFile);
+  
+      try {
+        const uploadResponse = await axios.post(
+          `${BASE_URL}/uploads/posts`,
+          imageFormData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+  
+        console.log("Upload Response:", uploadResponse.data);
+  
+        updatedData.cover = uploadResponse.data.data; 
+      } catch (uploadError) {
+        console.error("Error uploading image:", uploadError.response?.data || uploadError);
+        return;
+      }
+    }
+  
+    console.log("Final Updated Data:", updatedData);
+  
+    try {
+      const response = await axios.patch(url, updatedData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+  
+      console.log("Post updated successfully:", response.data);
+  
 
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === selectedPost.id
+            ? { ...post, ...updatedData, cover: updatedData.cover ? `http://ec2-3-76-10-130.eu-central-1.compute.amazonaws.com:4004/uploads/posts/${updatedData.cover}` : post.cover }
+            : post
+        )
+      );
+  
+      closeModal();
+    } catch (error) {
+      console.error("Error updating post:", error.response?.data || error);
+      if (error.response) {
+        console.error("Server response data:", error.response.data);
+        console.error("Server response status:", error.response.status);
+        console.error("Server response headers:", error.response.headers);
+      }
+    }
+  };
   const handleDelete = async () => {
-    // Logic for handling delete
+   
+    if (!selectedPost) {
+      console.error("No post selected for deletion.");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    const url = `${BASE_URL}/posts/${selectedPost.id}`;
+
+    try {
+      const response = await axios.delete(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log("Post deleted successfully:", response.data);
+      setPosts(posts.filter((post) => post.id !== selectedPost.id));
+      closeModal();
+    } catch (error) {
+      console.error("Error deleting post:", error.response?.data || error);
+    }
+
+
+
+
   };
 
   return (
@@ -228,7 +420,7 @@ const Posts = () => {
                   sx={{ mb: 2 }}
                 />
               )}
-              <FormControl fullWidth sx={{ mb: 2 }}>
+              {/* <FormControl fullWidth sx={{ mb: 2 }}>
                 <InputLabel>Categories</InputLabel>
                 <Select
                   multiple
@@ -241,7 +433,47 @@ const Posts = () => {
                       {category.name}
                     </MenuItem>
                   ))}
-                </Select>
+                </Select> */}
+
+<FormControl fullWidth sx={{ mb: 2 }}>
+  <InputLabel>Categories</InputLabel>
+  <Select
+    multiple
+    value={formData.categories}
+    onChange={handleCategoryChange}
+    required
+
+    MenuProps={{
+      disableAutoFocusItem: true,
+    }}
+    renderValue={(selected) => selected.map((id) => {
+      const category = categories.find(cat => cat.id === id);
+      return category ? category.name : id;
+    }).join(", ")}
+  >
+    {categories.map((category) => (
+      <MenuItem key={category.id} value={category.id}>
+        {category.name}
+      </MenuItem>
+    ))}
+  </Select>
+
+
+
+{/* <div>
+            <label>Categories:</label>
+            <select multiple value={formData.categories} onChange={handleCategoryChange} required>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        */}
+
+
+
               </FormControl>
               <TextField
                 fullWidth

@@ -47,7 +47,7 @@ const CreatePost = () => {
 
   const uploadImage = async (file) => {
     const token = localStorage.getItem("token");
-    const url = `${BASE_URL}/uploads/posts`;
+    const url = `${BASE_URL}/uploads/posts`; 
 
     const formData = new FormData();
     formData.append("cover", file);
@@ -58,8 +58,9 @@ const CreatePost = () => {
           "Content-Type": "multipart/form-data",
         },
       });
+      console.log("Uploaded file name:", response.data.data);
 
-      return response.data.filename;
+      return response.data.data;
     } catch (error) {
       console.error("Error uploading image:", error.response?.data || error);
       throw error;
@@ -88,23 +89,45 @@ const CreatePost = () => {
     setFormData({ ...formData, [name]: value });
   };
 
+  // const handleFileChange = (e) => {
+  //   setFormData({ ...formData, cover: e.target.files[0] });
+  // };
   const handleFileChange = (e) => {
-    setFormData({ ...formData, cover: e.target.files[0] });
+    const file = e.target.files[0];
+    if (file) {
+      setFormData((prev) => ({ ...prev, cover: file }));
+    }
   };
+  
+
+
+  // const handleCategoryChange = (e) => {
+  //   const selectedCategories = Array.from(
+  //     e.target.selectedOptions,
+  //     (option) => Number(option.value)
+  //   );
+  // setFormData({ ...formData, categories: selectedCategories });
 
   const handleCategoryChange = (e) => {
-    const selectedCategories = Array.from(
-      e.target.selectedOptions,
-      (option) => Number(option.value)
-    );
-    setFormData({ ...formData, categories: selectedCategories });
+    setFormData({ ...formData, categories: e.target.value });
   };
+  
+
+
+   
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const coverName = await uploadImage(formData.cover);
+      // const coverName = await uploadImage(formData.cover);
+      // const coverName = formData.cover ? await uploadImage(formData.cover) : "default.png";
+      let coverName = "default.png";
+if (formData.cover) {
+  coverName = await uploadImage(formData.cover);
+  console.log("Cover Name:", coverName);
+}
 
       const postData = {
         title: formData.title,
@@ -116,6 +139,9 @@ const CreatePost = () => {
       };
 
       await createPost(postData);
+      console.log("Post Data:", postData);
+      console.log("Post created successfully!");
+
       navigate("/dashboard/posts");
     } catch (error) {
       console.error("Error creating post:", error.response?.data || error);
@@ -223,6 +249,8 @@ const CreatePost = () => {
       </Paper>
     </Box>
   );
+
 };
+
 
 export default CreatePost;

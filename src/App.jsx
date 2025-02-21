@@ -7,14 +7,14 @@ import Login from "./pages/login/login";
 import Signup from "./pages/signup/signup";
 import ProtectedRoute from "./component/ProtectedRoute";
 import { AuthProvider } from "./context/authContext";
-
 import './App.css'
 import Dashboard from './pages/dashboard/dashboard';
-// import Sidebar from './component/sidebar/sidebar';
 import Categories from "./pages/dashboard/categories";
 import Posts from "./pages/dashboard/posts";
 import Users from "./pages/dashboard/users";
 import CreatePost from "./pages/dashboard/createpost";
+import Post from "./pages/post/post";
+
 function App() {
 
   return (
@@ -30,11 +30,13 @@ function App() {
         {/* <Route path="*" element={<Navigate to="/home" />} /> */}
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={ <ProtectedRoute> <Dashboard /> </ProtectedRoute> } /> 
-     
-        <Route path="/dashboard/categories" element={ <ProtectedRoute> <Categories/> </ProtectedRoute> } />
-        <Route path="/dashboard/posts" element={  <ProtectedRoute>  <Posts/> </ProtectedRoute> } />
+        <Route path="/post" element={<Post />} />
 
+        <Route path="/dashboard" element={ <ProtectedRoute requiredRoles={['ADMIN',"MANAGE_POSTS"]}> <Dashboard /> </ProtectedRoute> } /> 
+        <Route path="/dashboard/users" element={ <ProtectedRoute requiredRoles={['ADMIN']}>   <Users/> </ProtectedRoute>} />
+        <Route path="/dashboard/categories" element={ <ProtectedRoute requiredRoles={['ADMIN']}> <Categories/> </ProtectedRoute> } />
+        <Route path="/dashboard/posts" element={  <ProtectedRoute  requiredRoles={["ADMIN", "MANAGE_POSTS"]}  >  <Posts/> </ProtectedRoute> } />
+        <Route path="/dashboard/createpost" element={<CreatePost />} />
 
 
         <Route path="/dashboard/posts/:id" element={  <ProtectedRoute>  <detailedPost/> </ProtectedRoute> } />
@@ -42,10 +44,9 @@ function App() {
 
 
 
-        <Route path="/dashboard/users" element={ <ProtectedRoute>   <Users/> </ProtectedRoute>} />
-        <Route path="/dashboard/createpost" element={<CreatePost />} />
+        
         </Routes>
-      </Router>
+      </Router> 
   
       </AuthProvider>
 
