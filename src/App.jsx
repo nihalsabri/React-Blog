@@ -14,25 +14,25 @@ import Sidebar from './component/sidebar/sidebar';
 import Categories from "./pages/dashboard/categories";
 import Posts from "./pages/dashboard/posts";
 import Users from "./pages/dashboard/users";
+import CreatePost from "./pages/dashboard/createpost";
 function App() {
 
   return (
     <AuthProvider>
       <Router>
       <Navbar />
-      <Sidebar />
+      {/* <Sidebar /> */}
         <Routes>
    
         <Route path="/" element={<Home />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
-
         <Route path="/dashboard" element={ <ProtectedRoute> <Dashboard /> </ProtectedRoute> } /> 
      
-        <Route path="/dashboard/categories" element={ <ProtectedRoute> <Categories/> </ProtectedRoute> } />
+         <Route path="/dashboard/categories" element={ <ProtectedRoute> <Categories/> </ProtectedRoute> } />
         <Route path="/dashboard/posts" element={  <ProtectedRoute>  <Posts/> </ProtectedRoute> } />
         <Route path="/dashboard/users" element={ <ProtectedRoute>   <Users/> </ProtectedRoute>} />
-
+        <Route path="/dashboard/createpost" element={<CreatePost />} />
         </Routes>
       </Router>
   

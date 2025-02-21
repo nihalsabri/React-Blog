@@ -25,6 +25,8 @@ const Navbar = () => {
             <li>
               <button onClick={handleLogout}>Log Out</button>
             </li>
+            <li><Link to="/dashboard"> Dashboard </Link></li>
+
           </>
         ) : (   <>
             <li><Link to="/login">Log in </Link></li>

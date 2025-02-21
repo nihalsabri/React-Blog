@@ -37,7 +37,7 @@ const Login = () => {
     try {
       const res = await axios.post(`${BASE_URL}/auth/signing`, data);
       await login(data.username, data.password); 
-      alert("Login successful!");
+ 
       navigate("/"); 
     } catch (error) {
       console.error("Login error:", error.response?.data || error.message);
