@@ -39,7 +39,7 @@ function App() {
         <Route path="/dashboard/createpost" element={<CreatePost />} />
 
 
-        <Route path="/dashboard/posts/:id" element={  <ProtectedRoute>  <detailedPost/> </ProtectedRoute> } />
+        <Route path="/posts/:id" element={ <Post/>} />
         <Route path="/categories/:slug" element={   <p>helllo</p>  } />
 
 

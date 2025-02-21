@@ -129,11 +129,7 @@ const Categories = () => {
         <Typography variant="h4" gutterBottom>
           Manage Categories
         </Typography>
-        {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
-            {error}
-          </Alert>
-        )}
+        
         <Button
           variant="contained"
           color="primary"
