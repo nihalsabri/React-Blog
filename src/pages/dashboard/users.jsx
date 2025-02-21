@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -62,8 +60,8 @@ const Users = () => {
 
       try {
         await axios.put(
-          `${BASE_URL}/users/${selectedUser.id}`,
-          { role: newRole },
+          `${BASE_URL}/users/role/${selectedUser.id}`,
+          { name: newRole },
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -124,10 +122,11 @@ const Users = () => {
         <div>
           <h3>Update Role for {selectedUser.username}</h3>
           <select value={newRole} onChange={(e) => setNewRole(e.target.value)}>
-            <option value="admin">Admin</option>
-            <option value="editor">Editor</option>
-            <option value="user">User</option>
-          </select>
+  <option value="ADMIN">Admin</option>
+  <option value="MANAGE_POSTS">Manage Posts</option>
+  <option value="MANAGE_COMMENTS">Manage Comments</option>
+  <option value="USER">User</option>
+</select>
           <button onClick={handleRoleUpdate}>Save Role</button>
         </div>
       )}
@@ -136,3 +135,4 @@ const Users = () => {
 };
 
 export default Users;
+

@@ -50,22 +50,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // const login = async (username, password) => {
- 
-  //   try {
-  //     const { data } = await axios.post(`${BASE_URL}/auth/signing`, { username, password });
-  
-  //     setUser(data.user); 
-      
-  //     localStorage.setItem("user", JSON.stringify(data.user));
-  //     localStorage.setItem("token", data.token);
-  
-  //     return data;
-  //   } catch (error) {
-  //     console.error("Login failed:", error.response?.data?.message || error.message);
-  //     throw new Error(error.response?.data?.message || "Invalid credentials");
-  //   }
-  // };
   const parseJwt = (token) => {
     try {
       return JSON.parse(atob(token.split('.')[1])); 
