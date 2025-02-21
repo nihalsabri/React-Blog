@@ -14,6 +14,8 @@ import Posts from "./pages/dashboard/posts";
 import Users from "./pages/dashboard/users";
 import CreatePost from "./pages/dashboard/createpost";
 import Post from "./pages/post/post";
+import CategoryPosts from "./pages/category/category";
+
 
 function App() {
 
@@ -40,7 +42,7 @@ function App() {
 
 
         <Route path="/posts/:id" element={ <Post/>} />
-        <Route path="/categories/:slug" element={   <p>helllo</p>  } />
+        <Route path="/categories/:slug" element={   <CategoryPosts /> } />
 
 
 
