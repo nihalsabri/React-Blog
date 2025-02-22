@@ -1,12 +1,14 @@
 {
-
+\
+  "homepage": "https://nihalsabri.github.io/Blog",
   "name": "blog",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
 
+  "predeploy":"npm run build",
+  "deploy": "gh-pages -d dist -b En-Blog-V1",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
