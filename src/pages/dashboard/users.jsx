@@ -1,0 +1,217 @@
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Sidebar from "../../component/sidebar/sidebar";
+import { useNavigate } from "react-router-dom";
+import {
+  Box,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Button,
+  Select,
+  MenuItem,
+  CircularProgress,
+  Modal,
+  Pagination,
+} from "@mui/material";
+
+const BASE_URL = "http://ec2-3-76-10-130.eu-central-1.compute.amazonaws.com:4004/api/v1";
+
+const Users = () => {
+  const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [newRole, setNewRole] = useState("");
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      toast.error("No token found! User is not authenticated.");
+      navigate("/login");
+      return;
+    }
+
+    axios
+      .get(`${BASE_URL}/users`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        if (Array.isArray(response.data.data)) {
+          setUsers(response.data.data); 
+        } else {
+          console.error("Expected an array but got:", response.data);
+          setUsers([]);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching users:", error);
+        if (error.response?.status === 403) {
+          toast.error("You do not have permission to access this resource.");
+        } else if (error.response?.status === 401) {
+          toast.error("Session expired. Please log in again.");
+          localStorage.removeItem("token");
+          navigate("/login");
+        } else {
+          toast.error("Failed to fetch users. Please try again later.");
+        }
+      })
+      .finally(() => setLoading(false));
+  }, [navigate]);
+
+
+  const indexOfLastUser = currentPage * itemsPerPage;
+  const indexOfFirstUser = indexOfLastUser - itemsPerPage;
+  const currentUsers = users.slice(indexOfFirstUser, indexOfLastUser); 
+
+  const handlePageChange = (event, page) => {
+    setCurrentPage(page);
+  };
+
+  const handleRoleUpdate = async () => {
+    if (selectedUser) {
+      const token = localStorage.getItem("token");
+
+      try {
+        await axios.put(
+          `${BASE_URL}/users/role/${selectedUser.id}`,
+          { name: newRole },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            user.id === selectedUser.id ? { ...user, role: newRole } : user
+          )
+        );
+
+        toast.success("Role updated successfully!");
+        setSelectedUser(null);
+      } catch (error) {
+        console.error("Error updating role:", error);
+        toast.error("Failed to update role. Please try again.");
+      }
+    }
+  };
+
+  return (
+    <Box sx={{ display: "flex" }}>
+      <Sidebar />
+      <Box sx={{ flexGrow: 1, p: 3 }}>
+        <Typography variant="h4" gutterBottom>
+          Manage Users
+        </Typography>
+
+        {loading ? (
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>ID</TableCell>
+                    <TableCell>Username</TableCell>
+                    <TableCell>Email</TableCell>
+                    <TableCell>Role</TableCell>
+                    <TableCell>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {currentUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell>{user.id}</TableCell>
+                      <TableCell>{user.username}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>{user.role}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={() => setSelectedUser(user)}
+                        >
+                          Update Role
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+
+      
+            <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+              <Pagination
+                count={Math.ceil(users.length / itemsPerPage)} 
+                page={currentPage}
+                onChange={handlePageChange}
+                color="primary"
+              />
+            </Box>
+          </>
+        )}
+
+        <Modal open={!!selectedUser} onClose={() => setSelectedUser(null)}>
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              bgcolor: "background.paper",
+              boxShadow: 24,
+              p: 4,
+              borderRadius: 2,
+              minWidth: 300,
+            }}
+          >
+            {selectedUser && (
+              <>
+                <Typography variant="h5" gutterBottom>
+                  Update Role for {selectedUser.username}
+                </Typography>
+                <Select
+                  value={newRole}
+                  onChange={(e) => setNewRole(e.target.value)}
+                  fullWidth
+                  sx={{ mb: 2 }}
+                >
+                  {selectedUser.role !== "ADMIN" && <MenuItem value="ADMIN">Admin</MenuItem>}
+                  {selectedUser.role !== "MANAGE_POSTS" && (
+                    <MenuItem value="MANAGE_POSTS">Manage Posts</MenuItem>
+                  )}
+                  {selectedUser.role !== "USER" && <MenuItem value="USER">User</MenuItem>}
+                </Select>
+                <Button variant="contained" color="primary" onClick={handleRoleUpdate}>
+                  Save Role
+                </Button>
+              </>
+            )}
+          </Box>
+        </Modal>
+      </Box>
+    </Box>
+  );
+};
+
+export default Users;
